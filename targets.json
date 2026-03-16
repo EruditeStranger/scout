@@ -1,11 +1,26 @@
 {
-  "high_priority": [
-    {"name": "JICA PARTNER", "url": "https://partner.jica.go.jp/"},
-    {"name": "JETRO Global HR", "url": "https://www.jetro.go.jp/"},
-    {"name": "Kobe University Global", "url": "https://www.kobe-u.ac.jp/"},
-    {"name": "AstraZeneca Osaka", "url": "https://www.astrazeneca.co.jp/"},
-    {"name": "P&G Japan (Kobe)", "url": "https://jp.pg.com/"},
-    {"name": "Nestlé Japan (Kobe)", "url": "https://www.nestle.co.jp/"},
-    {"name": "Hyogo International Association", "url": "https://www.hyogo-ip.or.jp/"}
+  "active_scrapers": [
+    {"name": "JICA PARTNER", "url": "https://partner.jica.go.jp/Recruit/Search", "notes": "Main board, ~309 listings, .for-clawler selector"},
+    {"name": "JETRO", "url": "https://www.jetro.go.jp/jetro/recruit/", "notes": "6 sub-pages, check for active postings"}
+  ],
+  "watch_list": [
+    {"name": "Hyogo International Association", "url": "https://www.hyogo-ip.or.jp/", "notes": "No job section currently — check periodically for announcements"},
+    {"name": "JICA Staff Recruitment", "url": "https://www.jica.go.jp/Resource/recruit/shokuin/index.html", "notes": "Portal only, links back to PARTNER for actual listings"}
+  ],
+  "future_sources": [
+    {"name": "GaijinPot Jobs", "url": "https://jobs.gaijinpot.com/", "notes": "English-language jobs in Japan"},
+    {"name": "Daijob", "url": "https://www.daijob.com/", "notes": "Bilingual job board"},
+    {"name": "Indeed Japan", "url": "https://jp.indeed.com/", "notes": "Broad, needs keyword filtering"},
+    {"name": "LinkedIn Jobs", "url": "https://www.linkedin.com/jobs/", "notes": "Requires auth, may need API"}
+  ],
+  "target_employers": [
+    {"name": "Sysmex", "location": "Kobe", "url": "https://www.sysmex.co.jp/"},
+    {"name": "P&G Japan", "location": "Kobe", "url": "https://jp.pg.com/"},
+    {"name": "Nestlé Japan", "location": "Kobe", "url": "https://www.nestle.co.jp/"},
+    {"name": "AstraZeneca Japan", "location": "Osaka", "url": "https://www.astrazeneca.co.jp/"},
+    {"name": "Kobe University", "location": "Kobe", "url": "https://www.kobe-u.ac.jp/"},
+    {"name": "JAC Recruitment", "location": "Osaka/Kobe", "url": "https://www.jac-recruitment.jp/", "type": "recruiter"},
+    {"name": "Robert Walters Japan", "location": "Osaka", "url": "https://www.robertwalters.co.jp/", "type": "recruiter"},
+    {"name": "Hays Japan", "location": "Osaka", "url": "https://www.hays.co.jp/", "type": "recruiter"}
   ]
 }

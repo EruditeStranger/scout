@@ -93,130 +93,109 @@ def score_emoji(score: int) -> str:
 # Scrapers — one per source
 # ---------------------------------------------------------------------------
 
-def scrape_jica() -> list[dict]:
-    """Scrape JICA PARTNER job listings."""
-    url = "https://partner.jica.go.jp/RequirementSearch"
+def scrape_jica_partner() -> list[dict]:
+    """Scrape JICA PARTNER job listings (the main board with ~300 listings)."""
+    url = "https://partner.jica.go.jp/Recruit/Search"
     jobs = []
     try:
         resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        for row in soup.select(".result_list_box"):
-            title_elem = row.select_one(".job_title")
-            link_elem = row.select_one("a")
-            desc_elem = row.select_one(".job_detail, .result_detail")
-
-            if title_elem and link_elem:
-                title = title_elem.get_text(strip=True)
-                link = link_elem.get("href", "")
-                if not link.startswith("http"):
-                    link = "https://partner.jica.go.jp" + link
-
-                description = desc_elem.get_text(strip=True) if desc_elem else ""
-                full_text = f"{title} {description}"
-
-                jobs.append({
-                    "title": title,
-                    "link": link,
-                    "description": description,
-                    "source": "JICA PARTNER",
-                    "score": compute_ferrari_score(full_text),
-                })
-    except requests.RequestException as e:
-        print(f"[WARN] JICA scrape failed: {e}")
-    return jobs
-
-
-def scrape_jica_career() -> list[dict]:
-    """Scrape JICA career/recruitment pages (staff positions)."""
-    url = "https://www.jica.go.jp/Resource/recruit/shokuin/index.html"
-    jobs = []
-    try:
-        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-
-        for link_elem in soup.select("a[href*='recruit']"):
-            title = link_elem.get_text(strip=True)
-            if not title or len(title) < 5:
+        # Job cards use class "for-clawler" (their typo)
+        for card in soup.select(".for-clawler"):
+            # Extract text and link from the card
+            link_elem = card.select_one("a")
+            if not link_elem:
                 continue
-            href = link_elem.get("href", "")
-            if not href.startswith("http"):
-                href = "https://www.jica.go.jp" + href
 
-            jobs.append({
-                "title": title,
-                "link": href,
-                "description": "",
-                "source": "JICA Careers",
-                "score": compute_ferrari_score(title),
-            })
-    except requests.RequestException as e:
-        print(f"[WARN] JICA Careers scrape failed: {e}")
-    return jobs
-
-
-def scrape_hyogo_international() -> list[dict]:
-    """Scrape Hyogo International Association for openings."""
-    url = "https://www.hyogo-ip.or.jp/"
-    jobs = []
-    try:
-        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-
-        # Look for recruitment-related links
-        for link_elem in soup.find_all("a", string=re.compile(r"採用|募集|求人|スタッフ|職員")):
             title = link_elem.get_text(strip=True)
             href = link_elem.get("href", "")
             if not href.startswith("http"):
-                href = "https://www.hyogo-ip.or.jp/" + href.lstrip("/")
+                href = "https://partner.jica.go.jp" + href
+
+            # Get surrounding text for scoring context
+            description = card.get_text(strip=True)
+            full_text = f"{title} {description}"
 
             jobs.append({
                 "title": title,
                 "link": href,
-                "description": "",
-                "source": "Hyogo Intl Assoc",
-                "score": compute_ferrari_score(title),
+                "description": description[:300],
+                "source": "JICA PARTNER",
+                "score": compute_ferrari_score(full_text),
             })
+
+        # Also try pagination if available
+        if not jobs:
+            # Fallback: try the results container directly
+            container = soup.select_one("#partialViewContainer")
+            if container:
+                for link_elem in container.select("a[href*='/Recruit/']"):
+                    title = link_elem.get_text(strip=True)
+                    if not title or len(title) < 5:
+                        continue
+                    href = link_elem.get("href", "")
+                    if not href.startswith("http"):
+                        href = "https://partner.jica.go.jp" + href
+                    jobs.append({
+                        "title": title,
+                        "link": href,
+                        "description": "",
+                        "source": "JICA PARTNER",
+                        "score": compute_ferrari_score(title),
+                    })
+
     except requests.RequestException as e:
-        print(f"[WARN] Hyogo International scrape failed: {e}")
+        print(f"[WARN] JICA PARTNER scrape failed: {e}")
     return jobs
 
 
 def scrape_jetro() -> list[dict]:
-    """Scrape JETRO for career/internship openings."""
-    url = "https://www.jetro.go.jp/jetro/recruit/"
+    """Scrape JETRO recruitment sub-pages for active openings."""
+    base = "https://www.jetro.go.jp"
+    sub_pages = [
+        "/jetro/recruit/",            # Main recruitment portal
+        "/jetro/recruit/career/",     # Experienced hire
+        "/jetro/recruit/staff-1.html",  # Full-time contract
+        "/jetro/recruit/staff.html",    # Part-time contract
+        "/jetro/recruit/advisor.html",  # Advisors/specialists
+        "/jetro/recruit/ninkitsuki.html",  # Fixed-term
+    ]
     jobs = []
-    try:
-        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
+    seen_links = set()
 
-        for link_elem in soup.select("a"):
-            title = link_elem.get_text(strip=True)
-            href = link_elem.get("href", "")
-            if any(kw in title for kw in ["募集", "採用", "職員", "スタッフ"]):
-                if not href.startswith("http"):
-                    href = "https://www.jetro.go.jp" + href
-                jobs.append({
-                    "title": title,
-                    "link": href,
-                    "description": "",
-                    "source": "JETRO",
-                    "score": compute_ferrari_score(title),
-                })
-    except requests.RequestException as e:
-        print(f"[WARN] JETRO scrape failed: {e}")
+    for path in sub_pages:
+        url = base + path
+        try:
+            resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
+
+            for link_elem in soup.select("a"):
+                title = link_elem.get_text(strip=True)
+                href = link_elem.get("href", "")
+                # Look for active recruitment announcements
+                if any(kw in title for kw in ["募集", "採用", "職員", "スタッフ", "求人", "応募"]):
+                    if not href.startswith("http"):
+                        href = base + href
+                    if href not in seen_links:
+                        seen_links.add(href)
+                        jobs.append({
+                            "title": title,
+                            "link": href,
+                            "description": "",
+                            "source": "JETRO",
+                            "score": compute_ferrari_score(title),
+                        })
+        except requests.RequestException as e:
+            print(f"[WARN] JETRO scrape failed for {path}: {e}")
     return jobs
 
 
 # Registry of all scrapers
 SCRAPERS = [
-    scrape_jica,
-    scrape_jica_career,
-    scrape_hyogo_international,
+    scrape_jica_partner,
     scrape_jetro,
 ]
 
