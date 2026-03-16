@@ -94,60 +94,53 @@ def score_emoji(score: int) -> str:
 # ---------------------------------------------------------------------------
 
 def scrape_jica_partner() -> list[dict]:
-    """Scrape JICA PARTNER job listings (the main board with ~300 listings)."""
-    url = "https://partner.jica.go.jp/Recruit/Search"
+    """Scrape JICA PARTNER job listings across all pages (~300 listings)."""
+    base_url = "https://partner.jica.go.jp"
     jobs = []
-    try:
-        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
+    seen_links = set()
 
-        # Job cards use class "for-clawler" (their typo)
-        for card in soup.select(".for-clawler"):
-            # Extract text and link from the card
-            link_elem = card.select_one("a")
-            if not link_elem:
-                continue
+    for page in range(1, 35):  # Up to ~31 pages, with margin
+        url = f"{base_url}/Recruit/Search?page={page}"
+        try:
+            resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
 
-            title = link_elem.get_text(strip=True)
-            href = link_elem.get("href", "")
-            if not href.startswith("http"):
-                href = "https://partner.jica.go.jp" + href
+            # .for-clawler are <a> tags themselves (not containers with child links)
+            cards = soup.select("a.for-clawler")
+            if not cards:
+                break  # No more results, stop paginating
 
-            # Get surrounding text for scoring context
-            description = card.get_text(strip=True)
-            full_text = f"{title} {description}"
+            for card in cards:
+                href = card.get("href", "")
+                if not href.startswith("http"):
+                    href = base_url + href
+                if href in seen_links:
+                    continue
+                seen_links.add(href)
 
-            jobs.append({
-                "title": title,
-                "link": href,
-                "description": description[:300],
-                "source": "JICA PARTNER",
-                "score": compute_ferrari_score(full_text),
-            })
+                title = card.get_text(strip=True)
 
-        # Also try pagination if available
-        if not jobs:
-            # Fallback: try the results container directly
-            container = soup.select_one("#partialViewContainer")
-            if container:
-                for link_elem in container.select("a[href*='/Recruit/']"):
-                    title = link_elem.get_text(strip=True)
-                    if not title or len(title) < 5:
-                        continue
-                    href = link_elem.get("href", "")
-                    if not href.startswith("http"):
-                        href = "https://partner.jica.go.jp" + href
-                    jobs.append({
-                        "title": title,
-                        "link": href,
-                        "description": "",
-                        "source": "JICA PARTNER",
-                        "score": compute_ferrari_score(title),
-                    })
+                # Try to get more context from the card's parent container
+                parent = card.find_parent("div")
+                description = parent.get_text(strip=True) if parent else ""
+                full_text = f"{title} {description}"
 
-    except requests.RequestException as e:
-        print(f"[WARN] JICA PARTNER scrape failed: {e}")
+                jobs.append({
+                    "title": title,
+                    "link": href,
+                    "description": description[:300],
+                    "source": "JICA PARTNER",
+                    "score": compute_ferrari_score(full_text),
+                })
+
+            print(f"[INFO] JICA page {page}: found {len(cards)} listings")
+
+        except requests.RequestException as e:
+            print(f"[WARN] JICA PARTNER page {page} failed: {e}")
+            break  # Don't hammer the server if it's down
+
+    print(f"[INFO] JICA PARTNER total: {len(jobs)} listings")
     return jobs
 
 
@@ -353,7 +346,7 @@ def send_hype():
 # Main
 # ---------------------------------------------------------------------------
 
-def main():
+def main(seed_mode: bool = False):
     seen = load_seen_jobs()
     stats = {"sources": 0, "new_jobs": 0, "errors": 0, "total_tracked": len(seen)}
 
@@ -373,7 +366,8 @@ def main():
     new_found = False
     for job in all_jobs:
         if job["link"] not in seen:
-            notify_discord(job)
+            if not seed_mode:
+                notify_discord(job)
             seen[job["link"]] = {
                 "title": job["title"],
                 "source": job["source"],
@@ -387,6 +381,8 @@ def main():
         stats["total_tracked"] = len(seen)
         save_seen_jobs(seen)
 
+    if seed_mode:
+        print(f"[INFO] Seeded {stats['new_jobs']} jobs into tracker (no notifications sent)")
     send_heartbeat(stats)
 
 
@@ -394,5 +390,9 @@ if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "--hype":
         send_hype()
+    elif len(sys.argv) > 1 and sys.argv[1] == "--seed":
+        # First run: scrape and track everything WITHOUT sending 300+ Discord alerts
+        print("[INFO] Seed mode: tracking all current listings without notifications")
+        main(seed_mode=True)
     else:
         main()
