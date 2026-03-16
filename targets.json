@@ -1,0 +1,11 @@
+{
+  "high_priority": [
+    {"name": "JICA PARTNER", "url": "https://partner.jica.go.jp/"},
+    {"name": "JETRO Global HR", "url": "https://www.jetro.go.jp/"},
+    {"name": "Kobe University Global", "url": "https://www.kobe-u.ac.jp/"},
+    {"name": "AstraZeneca Osaka", "url": "https://www.astrazeneca.co.jp/"},
+    {"name": "P&G Japan (Kobe)", "url": "https://jp.pg.com/"},
+    {"name": "Nestlé Japan (Kobe)", "url": "https://www.nestle.co.jp/"},
+    {"name": "Hyogo International Association", "url": "https://www.hyogo-ip.or.jp/"}
+  ]
+}
