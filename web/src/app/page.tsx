@@ -91,7 +91,7 @@ export default function Dashboard() {
       <p className="text-sm text-muted font-light mb-10">ダッシュボード — Your search at a glance</p>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-12 animate-fade-up delay-1">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-12 animate-fade-up delay-1">
         {[
           { label: "TOTAL", labelJp: "合計", value: stats.total, color: "border-l-ink/20" },
           { label: "NEW", labelJp: "新着", value: stats.new_count, color: "border-l-calm" },
@@ -121,22 +121,26 @@ export default function Dashboard() {
             topJobs.map((job) => (
               <div
                 key={job.id}
-                className="bg-white border border-border rounded-lg p-4 flex items-center gap-4 card-hover"
+                className="bg-white border border-border rounded-lg p-4 card-hover"
               >
-                <ScoreBadge score={job.score} />
-                <div className="flex-1 min-w-0">
-                  <a
-                    href={job.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-normal hover:text-calm transition-colors block truncate"
-                  >
-                    {job.translated_title || job.title}
-                  </a>
-                  <p className="text-xs text-muted font-light truncate mt-0.5">{job.title}</p>
+                <div className="flex items-start gap-3">
+                  <ScoreBadge score={job.score} />
+                  <div className="flex-1 min-w-0">
+                    <a
+                      href={job.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-normal hover:text-calm transition-colors block truncate"
+                    >
+                      {job.translated_title || job.title}
+                    </a>
+                    <p className="text-xs text-muted font-light truncate mt-0.5">{job.title}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <StatusPill status={job.status} />
+                      <span className="text-[10px] text-muted font-light">{job.source}</span>
+                    </div>
+                  </div>
                 </div>
-                <StatusPill status={job.status} />
-                <span className="text-[10px] text-muted font-light">{job.source}</span>
               </div>
             ))
           )}

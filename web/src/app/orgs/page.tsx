@@ -67,7 +67,7 @@ export default function OrgsPage() {
 
       {showAdd && (
         <div className="bg-white border border-border rounded-lg p-6 mb-8 animate-fade-up">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
               placeholder="Organization name"
@@ -115,7 +115,7 @@ export default function OrgsPage() {
           </div>
         ) : (
           orgs.map((org) => (
-            <div key={org.id} className="bg-white border border-border rounded-lg p-4 flex items-center gap-4 card-hover">
+            <div key={org.id} className="bg-white border border-border rounded-lg p-4 flex flex-wrap items-center gap-3 md:gap-4 card-hover">
               <div className="flex-1 min-w-0">
                 {org.url ? (
                   <a href={org.url} target="_blank" rel="noopener noreferrer" className="text-sm font-normal hover:text-calm transition-colors">

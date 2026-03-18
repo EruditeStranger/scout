@@ -46,7 +46,7 @@ export default function TrackerPage() {
       <h2 className="font-serif text-4xl font-light tracking-tight mb-1">Pipeline</h2>
       <p className="text-sm text-muted font-light mb-10">進捗管理 — Track your application journey</p>
 
-      <div className="grid grid-cols-3 gap-6 animate-fade-up delay-1">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 animate-fade-up delay-1">
         {PIPELINE_STAGES.map((stage) => (
           <div key={stage.status}>
             <div className={`border-t-[3px] ${stage.borderColor} bg-white border border-border rounded-lg`}>

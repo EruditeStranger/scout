@@ -68,7 +68,7 @@ export default function JobsPage() {
           placeholder="Search / 検索..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="px-4 py-3 text-sm font-light border border-border rounded-lg bg-white w-64 focus:outline-none focus:border-calm transition-colors"
+          className="px-4 py-3 text-sm font-light border border-border rounded-lg bg-white w-full md:w-64 focus:outline-none focus:border-calm transition-colors"
         />
 
         <select
@@ -111,8 +111,8 @@ export default function JobsPage() {
                 key={job.id}
                 className="bg-white border border-border rounded-lg p-4 card-hover"
               >
-                <div className="flex items-center gap-4">
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium ${scoreColor(job.score)}`}>
+                <div className="flex items-start gap-3">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium shrink-0 ${scoreColor(job.score)}`}>
                     {job.score}/10
                   </span>
 
@@ -128,23 +128,22 @@ export default function JobsPage() {
                     <span className="text-xs text-muted font-light block truncate mt-0.5">
                       {job.title}
                     </span>
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <select
+                        value={job.status}
+                        onChange={(e) => updateStatus(job.id, e.target.value as JobStatus)}
+                        className="text-xs px-3 py-1.5 rounded-full border border-border bg-white cursor-pointer font-light focus:outline-none focus:border-calm"
+                      >
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                      <span className="text-[10px] text-muted shrink-0">{job.source}</span>
+                      <span className="text-[10px] text-muted font-light shrink-0">
+                        {new Date(job.seen_at).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
-
-                  <span className="text-[10px] text-muted shrink-0">{job.source}</span>
-
-                  <select
-                    value={job.status}
-                    onChange={(e) => updateStatus(job.id, e.target.value as JobStatus)}
-                    className="text-xs px-3 py-1.5 rounded-full border border-border bg-white cursor-pointer font-light focus:outline-none focus:border-calm"
-                  >
-                    {STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-
-                  <span className="text-[10px] text-muted font-light shrink-0">
-                    {new Date(job.seen_at).toLocaleDateString()}
-                  </span>
                 </div>
               </div>
             ))
