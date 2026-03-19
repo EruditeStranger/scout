@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const NAV_ITEMS = [
@@ -13,7 +14,13 @@ const NAV_ITEMS = [
 ];
 
 export default function Shell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Login page renders without shell chrome
+  if (pathname === "/login") {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">

@@ -32,10 +32,15 @@ Stop "plowing a rice field with a Ferrari." Move the search to highways — orga
 ### Why not LINE for notifications?
 LINE Notify shut down March 2025. LINE Messaging API requires a business account (feels impersonal). She already gets Discord notifications. Don't fix what works.
 
-### Token optimization protocol
-- **Opus 4.6:** Planning, architecture decisions, ideation, CLAUDE.md updates
-- **Sonnet 4.6:** Code execution, file edits, implementation tasks
+### Model & reasoning protocol
+| Task | Model | Reasoning effort |
+|---|---|---|
+| Planning, architecture, ideation, CLAUDE.md updates | **Opus 4.6** (`claude-opus-4-6`) | medium |
+| Code execution, file edits, implementation | **Sonnet 4.6** (`claude-sonnet-4-6`) | medium |
+| Reading large text blobs (scraper output, logs, big files) | **Haiku 4.5** (`claude-haiku-4-5-20251001`) | none needed |
+
 - Keep CLAUDE.md updated at decision points so either model has full context
+- **Autonomous model switching:** The Agent tool supports a `model` parameter (`"opus"`, `"sonnet"`, `"haiku"`). A Sonnet agent can and should spawn an Opus subagent for planning tasks, or a Haiku subagent for large text reads — no user instruction needed. Use this for discrete, self-contained tasks (planning phase → Opus subagent returns plan → Sonnet executes).
 
 ## 4. Repository Structure
 
