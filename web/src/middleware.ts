@@ -1,4 +1,10 @@
-// This file is intentionally empty.
-// Middleware has been moved to web/middleware.ts (project root).
-// Next.js will use the root-level file; this file is ignored.
-export {};
+// Middleware lives at web/middleware.ts (project root).
+// This stub satisfies Next.js's file detection. The root middleware runs instead.
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export function middleware(_req: NextRequest) {
+  return NextResponse.next();
+}
+
+export const config = { matcher: [] };
