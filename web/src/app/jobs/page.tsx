@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import type { Job, JobStatus } from "@/lib/types";
 import JobCard from "@/app/components/JobCard";
 
-const STATUS_OPTIONS: JobStatus[] = ["new", "interested", "applied", "interview", "rejected", "blacklisted"];
+const STATUS_OPTIONS: JobStatus[] = ["interested", "applied", "interview", "rejected", "見送り"];
 
 type FeedbackFilter = "all" | "up" | "down" | "none";
 
@@ -16,14 +16,17 @@ const FEEDBACK_TABS: { value: FeedbackFilter; label: string }[] = [
   { value: "none", label: "Unrated" },
 ];
 
+type Lang = "en" | "jp";
+
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterMinScore, setFilterMinScore] = useState<number>(1);
+  const [filterMinScore, setFilterMinScore] = useState<number>(5);
   const [filterFeedback, setFilterFeedback] = useState<FeedbackFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"score" | "deadline" | "posted_at" | "seen_at">("score");
+  const [lang, setLang] = useState<Lang>("jp");
 
   const loadJobs = useCallback(async () => {
     const ascending = sortBy === "deadline";
@@ -66,8 +69,26 @@ export default function JobsPage() {
 
   return (
     <div className="animate-fade-up">
-      <h2 className="font-serif text-4xl font-light tracking-tight mb-1">Leads</h2>
-      <p className="text-sm text-muted font-light mb-10">求人一覧 — Browse and filter all listings</p>
+      <div className="flex items-start justify-between mb-10">
+        <div>
+          <h2 className="font-serif text-4xl font-light tracking-tight mb-1">Leads</h2>
+          <p className="text-sm text-muted font-light">求人一覧 — Browse and filter all listings</p>
+        </div>
+        <div className="flex rounded-lg border border-border overflow-hidden">
+          <button
+            onClick={() => setLang("en")}
+            className={`px-4 py-2.5 text-sm font-light transition-colors ${
+              lang === "en" ? "bg-ink text-paper" : "bg-white text-muted hover:bg-paper-warm"
+            }`}
+          >EN</button>
+          <button
+            onClick={() => setLang("jp")}
+            className={`px-4 py-2.5 text-sm font-light transition-colors ${
+              lang === "jp" ? "bg-ink text-paper" : "bg-white text-muted hover:bg-paper-warm"
+            }`}
+          >JP</button>
+        </div>
+      </div>
 
       {/* Feedback tabs */}
       <div className="flex gap-1 mb-6 animate-fade-up delay-1">
@@ -101,7 +122,8 @@ export default function JobsPage() {
           onChange={(e) => setFilterStatus(e.target.value)}
           className="px-4 py-3 text-sm font-light border border-border rounded-lg bg-white focus:outline-none focus:border-calm"
         >
-          <option value="all">All statuses</option>
+          <option value="all">Status: All</option>
+          <option value="new">New</option>
           {STATUS_OPTIONS.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -122,7 +144,7 @@ export default function JobsPage() {
           <span className="label-caps">MIN SCORE</span>
           <input
             type="range"
-            min={1}
+            min={5}
             max={10}
             value={filterMinScore}
             onChange={(e) => setFilterMinScore(Number(e.target.value))}
@@ -143,7 +165,7 @@ export default function JobsPage() {
             </div>
           ) : (
             jobs.map((job) => (
-              <JobCard key={job.id} job={job} onUpdate={updateJob} />
+              <JobCard key={job.id} job={job} onUpdate={updateJob} lang={lang} />
             ))
           )}
         </div>

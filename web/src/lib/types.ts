@@ -4,7 +4,7 @@ export type JobStatus =
   | "applied"
   | "interview"
   | "rejected"
-  | "blacklisted";
+  | "見送り";
 
 export type OrgCategory =
   | "radar"

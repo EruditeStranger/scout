@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Job, JobStatus } from "@/lib/types";
 
-const STATUS_OPTIONS: JobStatus[] = ["new", "interested", "applied", "interview", "rejected", "blacklisted"];
+const STATUS_OPTIONS: JobStatus[] = ["interested", "applied", "interview", "rejected", "見送り"];
 
 const NOTE_PLACEHOLDERS = {
   up: "What looked good? / どこが良さそうでしたか？",
@@ -50,9 +50,10 @@ interface JobCardProps {
   job: Job;
   onUpdate: (updated: Job) => void;
   showStatus?: boolean;
+  lang?: "en" | "jp";
 }
 
-export default function JobCard({ job, onUpdate, showStatus = true }: JobCardProps) {
+export default function JobCard({ job, onUpdate, showStatus = true, lang = "en" }: JobCardProps) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteText, setNoteText] = useState(job.feedback_note ?? "");
 
@@ -113,20 +114,41 @@ export default function JobCard({ job, onUpdate, showStatus = true }: JobCardPro
             href={job.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-normal hover:text-calm transition-colors block truncate"
+            className="text-sm font-normal hover:text-calm transition-colors block leading-snug"
+            style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
           >
-            {job.translated_title || job.title}
+            {lang === "jp"
+              ? (job.title || job.translated_title)
+              : (job.translated_title || job.title)}
           </a>
-          {job.translated_title && (
-            <span className="text-xs text-muted font-light block truncate mt-0.5">{job.title}</span>
+          {job.translated_title && job.title && (
+            <span className="text-xs text-muted font-light block mt-0.5 truncate">
+              {lang === "jp" ? job.translated_title : job.title}
+            </span>
           )}
           {job.score_rationale && (
-            <p className="text-xs text-ink/60 font-light mt-1 italic truncate">
-              {job.score_rationale}
+            <p className="text-xs text-ink/60 font-light mt-1">
+              <span className="text-[10px] uppercase tracking-wide text-muted/70 not-italic mr-1">AI Note:</span>
+              <span className="italic">{job.score_rationale}</span>
             </p>
           )}
 
+          {/* Row 1: metadata */}
           <div className="flex flex-wrap items-center gap-2 mt-2">
+            <span className="text-[10px] text-muted shrink-0">{job.source}</span>
+            {job.posted_at && (
+              <span className="text-[10px] text-muted font-light shrink-0">
+                Posted {new Date(job.posted_at).toLocaleDateString()}
+              </span>
+            )}
+            <DeadlineBadge deadline={job.deadline} />
+            <span className="text-[10px] text-muted font-light shrink-0">
+              Seen {new Date(job.seen_at).toLocaleDateString()}
+            </span>
+          </div>
+
+          {/* Row 2: actions */}
+          <div className="flex items-center gap-2 mt-2">
             {showStatus && (
               <select
                 value={job.status}
@@ -138,17 +160,6 @@ export default function JobCard({ job, onUpdate, showStatus = true }: JobCardPro
                 ))}
               </select>
             )}
-            <span className="text-[10px] text-muted shrink-0">{job.source}</span>
-            {job.posted_at && (
-              <span className="text-[10px] text-muted font-light shrink-0">
-                Posted {new Date(job.posted_at).toLocaleDateString()}
-              </span>
-            )}
-            <DeadlineBadge deadline={job.deadline} />
-            <span className="text-[10px] text-muted font-light shrink-0">
-              {new Date(job.seen_at).toLocaleDateString()}
-            </span>
-
             <div className="flex items-center gap-1 ml-auto">
               <button
                 onClick={() => toggleFeedback("up")}

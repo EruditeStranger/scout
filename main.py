@@ -138,8 +138,9 @@ def compute_ferrari_score(text: str) -> int:
 
 
 CANDIDATE_PROFILE = """Sumika Moriwaki — M.A. International Relations (Boston University, Pardee School, 2025).
-B.A. Intercultural Studies. 6.5 years as International Exchange Program Coordinator at Himeji Cultural
-and International Exchange Foundation. Key achievements: 4-country Duty of Care (Belgium, Australia,
+B.A. Intercultural Studies. PREVIOUSLY (March 2018 – August 2024, now departed): International Exchange
+Program Coordinator at Himeji Cultural and International Exchange Foundation. She no longer works there
+and is actively seeking a new role. Key achievements: 4-country Duty of Care (Belgium, Australia,
 South Korea, Singapore), 11-country program portfolio, 1,000+ annual participants, 50+ volunteer network,
 7-language newsletter, sister-city diplomacy. Honored as an Interlocal Human Resource.
 Certifications: Johns Hopkins International Travel Safety, TESOL, TEC, Children's English Instructor,
